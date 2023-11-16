@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+fief-client
+redis
+docker
+pydantic-settings
+google-api-python-client
+botocore
+boto3
+oauth2client
+google-auth-httplib2
+google-auth-oauthlib
+itsdangerous
