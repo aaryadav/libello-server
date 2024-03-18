@@ -1,8 +1,8 @@
 fastapi
 uvicorn[standard]
-fief-client
-redis
-docker
+fief-client-fastapi
+redis-py
+docker-py
 pydantic-settings
 google-api-python-client
 botocore
@@ -11,3 +11,5 @@ oauth2client
 google-auth-httplib2
 google-auth-oauthlib
 itsdangerous
+sse_starlette
+s3utils
