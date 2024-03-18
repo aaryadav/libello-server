@@ -6,6 +6,8 @@ import json
 from contextlib import closing
 from websocket import create_connection, WebSocketTimeoutException
 import time
+import asyncio
+
 
 def connect(url, token):
     headers = {"Authorization": f"token {token}"}
@@ -15,7 +17,7 @@ def connect(url, token):
     return response, session
 
 
-def create_session(session, url, notebook_name):
+def create_kernel_session(session, url, notebook_name):
     # First, perform a GET request to obtain the _xsrf token
     response = session.get(url)
     xsrf_token = session.cookies.get('_xsrf')
@@ -30,8 +32,8 @@ def create_session(session, url, notebook_name):
         headers=headers,
         json={
             "kernel": {"name": "python3"},
-            "name": notebook_name,  # Use the notebook_name parameter for the name
-            "path": notebook_name,  # Use the notebook_name parameter for the path
+            "name": notebook_name,
+            "path": notebook_name,
             "type": "notebook",
         },
     )
@@ -42,7 +44,6 @@ def create_session(session, url, notebook_name):
 
     data = response.json()
     return data
-
 
 
 def delete_session(session, url, session_id):
@@ -159,15 +160,23 @@ def exec_code(url, token, kernel_id, session_id, code):
                 msg = json.loads(conn.recv())
             except WebSocketTimeoutException:
                 break
-
             if msg["msg_type"] == "stream":
-                yield msg["content"]["text"]
+                print(msg["content"]["text"])
+                yield json.dumps({"type": "stream", "content": msg["content"]["text"]})
+
+            if msg["msg_type"] == "error":
+                print(msg["content"]["traceback"])
+                yield json.dumps({"type": "error", "content": msg["content"]["traceback"]})
 
             if msg["msg_type"] == "execute_reply":
                 end_time = time.time()
                 time_taken = round(end_time - start_time, 3)
-                yield f"Time taken: {time_taken} seconds\n"
+                yield json.dumps({"type": "execution_time", "content": f"{time_taken} seconds"})
                 break
+
+            if msg["msg_type"] == "display_data":
+                image_data = msg["content"]['data']["image/png"]
+                yield json.dumps({"type": "image", "content": image_data})
 
 
 if __name__ == "__main__":
