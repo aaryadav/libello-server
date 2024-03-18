@@ -12,9 +12,10 @@ class Settings(BaseSettings):
     redis_port: int
     redis_db: int
     
-    client_id_json: str = None
-    scopes: List[str] = None
-    storage_json: str = None
+    r2_token_value: str
+    r2_access_id_key: str
+    r2_secret_access_key: str
+    r2_endpoint: str
 
     class Config:
         env_file = ".env"
